@@ -152,11 +152,15 @@ inline uint32_t AppleMidi_Class<UdpClass>::getSynchronizationSource()
 		// The time between booting and needing the SSRC for the first time (first network traffic) is
 		// a good enough random seed.
 		long seed = (long)micros();
+#if (LINUX)
+		std::srand(seed);
+		_ssrc = (1 + rand()) % INT32_MAX;
+#else
 		randomSeed(seed);
 
 		// not full range of UINT32_MAX (unsigned!), but (signed) long should suffice
 		_ssrc = random(1, INT32_MAX);
-
+#endif
 #if (APPLEMIDI_DEBUG)
 		DEBUGSTREAM.print(F("Lazy init of SSRC. Value is 0x"));
 		DEBUGSTREAM.println(_ssrc, HEX);
