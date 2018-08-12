@@ -96,7 +96,7 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 
 #define _XOPEN_SOURCE
 #define _XOPEN_SOURCE_EXTENDED
-#include <_ansi.h>
+	  //#include <_ansi.h>
 #include <reent.h>
 #include <stdio.h>
 #include <stdlib.h>
