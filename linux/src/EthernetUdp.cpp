@@ -29,7 +29,8 @@
 // #include "utility/w5100.h"
 // #include "utility/socket.h"
 #include "Ethernet.h"
-#include "Udp.h"
+#include "EthernetUdp.h"
+// #include "Udp.h"
 // #include "Dns.h"
 
 /* Constructor */
@@ -37,6 +38,7 @@ EthernetUDP::EthernetUDP() : _sock(MAX_SOCK_NUM) {}
 
 /* Start EthernetUDP socket, listening at local port PORT */
 uint8_t EthernetUDP::begin(uint16_t port) {
+#if 0
   if (_sock != MAX_SOCK_NUM)
     return 0;
 
@@ -47,7 +49,6 @@ uint8_t EthernetUDP::begin(uint16_t port) {
       break;
     }
   }
-
   if (_sock == MAX_SOCK_NUM)
     return 0;
 
@@ -56,6 +57,8 @@ uint8_t EthernetUDP::begin(uint16_t port) {
   socket(_sock, SnMR::UDP, _port, 0);
 
   return 1;
+#endif
+  return 0;
 }
 
 /* return number of bytes available in the current packet,
@@ -67,6 +70,7 @@ int EthernetUDP::available() {
 /* Release any resources being used by this EthernetUDP instance */
 void EthernetUDP::stop()
 {
+#if 0
   if (_sock == MAX_SOCK_NUM)
     return;
 
@@ -74,6 +78,7 @@ void EthernetUDP::stop()
 
   EthernetClass::_server_port[_sock] = 0;
   _sock = MAX_SOCK_NUM;
+#endif
 }
 
 int EthernetUDP::beginPacket(const char *host, uint16_t port)
@@ -85,22 +90,31 @@ int EthernetUDP::beginPacket(const char *host, uint16_t port)
 
   // dns.begin(Ethernet.dnsServerIP());
   // ret = dns.getHostByName(host, remote_addr);
+#if 0
   if (ret == 1) {
     return beginPacket(remote_addr, port);
   } else {
     return ret;
   }
+#endif
+  return 0;
 }
 
 int EthernetUDP::beginPacket(IPAddress ip, uint16_t port)
 {
   _offset = 0;
+#if 0
   return startUDP(_sock, rawIPAddress(ip), port);
+#endif
+  return 0;
 }
 
 int EthernetUDP::endPacket()
 {
+#if 0  
   return sendUDP(_sock);
+#endif
+  return 0;
 }
 
 size_t EthernetUDP::write(uint8_t byte)
@@ -110,9 +124,12 @@ size_t EthernetUDP::write(uint8_t byte)
 
 size_t EthernetUDP::write(const uint8_t *buffer, size_t size)
 {
+#if 0
   uint16_t bytes_written = bufferData(_sock, _offset, buffer, size);
   _offset += bytes_written;
   return bytes_written;
+#endif
+  return 0;
 }
 
 int EthernetUDP::parsePacket()
@@ -125,13 +142,14 @@ int EthernetUDP::parsePacket()
     read();
   }
 
+#if 0
   if (recvAvailable(_sock) > 0)
   {
     //HACK - hand-parse the UDP packet using TCP recv method
     uint8_t tmpBuf[8];
     int ret =0; 
     //read 8 header bytes and get IP and port from it
-    ret = recv(_sock,tmpBuf,8);
+    // ret = recv(_sock,tmpBuf,8);
     if (ret > 0)
     {
       _remoteIP = tmpBuf;
@@ -145,6 +163,7 @@ int EthernetUDP::parsePacket()
     }
     return ret;
   }
+#endif
   // There aren't any packets available
   return 0;
 }
@@ -153,13 +172,14 @@ int EthernetUDP::read()
 {
   uint8_t byte;
 
+#if 0
   if ((_remaining > 0) && (recv(_sock, &byte, 1) > 0))
   {
     // We read things without any problems
     _remaining--;
     return byte;
   }
-
+#endif
   // If we get here, there's no data available
   return -1;
 }
@@ -170,18 +190,18 @@ int EthernetUDP::read(unsigned char* buffer, size_t len)
   if (_remaining > 0)
   {
 
-    int got;
+    int got = -1;
 
     if (_remaining <= len)
     {
       // data should fit in the buffer
-      got = recv(_sock, buffer, _remaining);
+      // got = recv(_sock, buffer, _remaining);
     }
     else
     {
       // too much data for the buffer, 
       // grab as much as will fit
-      got = recv(_sock, buffer, len);
+      // got = recv(_sock, buffer, len);
     }
 
     if (got > 0)
@@ -205,8 +225,11 @@ int EthernetUDP::peek()
   // may get the UDP header
   if (!_remaining)
     return -1;
+#if 0
   ::peek(_sock, &b);
   return b;
+#endif
+  return -1;
 }
 
 void EthernetUDP::flush()
@@ -217,6 +240,7 @@ void EthernetUDP::flush()
 /* Start EthernetUDP socket, listening at local port PORT */
 uint8_t EthernetUDP::beginMulticast(IPAddress ip, uint16_t port)
 {
+#if 0
   if (_sock != MAX_SOCK_NUM)
     return 0;
 
@@ -238,13 +262,15 @@ uint8_t EthernetUDP::beginMulticast(IPAddress ip, uint16_t port)
   mac[4] = ip[2];
   mac[5] = ip[3];
 
-  W5100.writeSnDIPR(_sock, rawIPAddress(ip));   //239.255.0.1
-  W5100.writeSnDPORT(_sock, port);
-  W5100.writeSnDHAR(_sock,mac);
+  // W5100.writeSnDIPR(_sock, rawIPAddress(ip));   //239.255.0.1
+  // W5100.writeSnDPORT(_sock, port);
+  // W5100.writeSnDHAR(_sock,mac);
 
   _remaining = 0;
-  socket(_sock, SnMR::UDP, port, SnMR::MULTI);
+  // socket(_sock, SnMR::UDP, port, SnMR::MULTI);
   return 1;
+#endif
+  return 0;
 }
 
 

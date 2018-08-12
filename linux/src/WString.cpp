@@ -20,6 +20,7 @@
 */
 
 #include "WString.h"
+#include "nonstd.h"
 
 /*********************************************/
 /*  Constructors                             */

@@ -15,6 +15,7 @@ EthernetServer::EthernetServer(uint16_t port)
 
 void EthernetServer::begin()
 {
+#if 0
   for (int sock = 0; sock < MAX_SOCK_NUM; sock++) {
     EthernetClient client(sock);
     if (client.status() == SnSR::CLOSED) {
@@ -24,12 +25,13 @@ void EthernetServer::begin()
       break;
     }
   }  
+#endif
 }
 
 void EthernetServer::accept()
 {
   int listening = 0;
-
+#if 0
   for (int sock = 0; sock < MAX_SOCK_NUM; sock++) {
     EthernetClient client(sock);
 
@@ -42,7 +44,7 @@ void EthernetServer::accept()
       }
     } 
   }
-
+#endif
   if (!listening) {
     begin();
   }
@@ -52,6 +54,7 @@ EthernetClient EthernetServer::available()
 {
   accept();
 
+#if 0
   for (int sock = 0; sock < MAX_SOCK_NUM; sock++) {
     EthernetClient client(sock);
     if (EthernetClass::_server_port[sock] == _port) {
@@ -64,7 +67,7 @@ EthernetClient EthernetServer::available()
       }
     }
   }
-
+#endif
   return EthernetClient(MAX_SOCK_NUM);
 }
 
@@ -82,10 +85,12 @@ size_t EthernetServer::write(const uint8_t *buffer, size_t size)
   for (int sock = 0; sock < MAX_SOCK_NUM; sock++) {
     EthernetClient client(sock);
 
+#if 0
     if (EthernetClass::_server_port[sock] == _port &&
       client.status() == SnSR::ESTABLISHED) {
       n += client.write(buffer, size);
     }
+#endif
   }
   
   return n;

@@ -1,10 +1,13 @@
+#ifndef _arduino_h
+#define _arduino_h 1
+
 #include <inttypes.h>
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
   
 typedef bool boolean;
-
+typedef uint8_t byte;
 unsigned long millis(void);
 unsigned long micros(void);
 
@@ -77,3 +80,4 @@ public:
 
 };
 extern Serial_ Serial;
+#endif
