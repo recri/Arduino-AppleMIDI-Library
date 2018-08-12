@@ -30,3 +30,5 @@ unsigned long micros(void) {
     }
     return s*1000000 + us;
 }
+
+Serial_ Serial;
