@@ -76,7 +76,7 @@ void setup()
 
   Serial.print("Getting IP address...");
 
-  if (Ethernet.begin(mac) == 0) {
+  if (Ethernet.begin() == 0) {
     Serial.println();
     Serial.println( "Failed DHCP, check network cable & reboot" );
     for (;;)

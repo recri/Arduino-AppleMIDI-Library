@@ -10,6 +10,8 @@ unsigned long micros(void);
 
 #include "Stream.h"
 
+const int SERIAL_BUFFER_SIZE = 512;
+
 class Serial_ : public Stream
 {
 private:
