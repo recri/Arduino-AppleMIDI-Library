@@ -26,11 +26,11 @@
  * bjoern@cs.stanford.edu 12/30/2008
  */
 
-#include "utility/w5100.h"
-#include "utility/socket.h"
+// #include "utility/w5100.h"
+// #include "utility/socket.h"
 #include "Ethernet.h"
 #include "Udp.h"
-#include "Dns.h"
+// #include "Dns.h"
 
 /* Constructor */
 EthernetUDP::EthernetUDP() : _sock(MAX_SOCK_NUM) {}
@@ -80,11 +80,11 @@ int EthernetUDP::beginPacket(const char *host, uint16_t port)
 {
   // Look up the host first
   int ret = 0;
-  DNSClient dns;
-  IPAddress remote_addr;
+  // DNSClient dns;
+  // IPAddress remote_addr;
 
-  dns.begin(Ethernet.dnsServerIP());
-  ret = dns.getHostByName(host, remote_addr);
+  // dns.begin(Ethernet.dnsServerIP());
+  // ret = dns.getHostByName(host, remote_addr);
   if (ret == 1) {
     return beginPacket(remote_addr, port);
   } else {

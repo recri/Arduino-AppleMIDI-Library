@@ -1,8 +1,13 @@
-#include "utility/w5100.h"
-#include "utility/socket.h"
+//#include "utility/w5100.h"
+//#include "utility/socket.h"
 
 extern "C" {
-  #include "string.h"
+#include "string.h"
+#include <stdio.h>
+#include <sys/socket.h>
+#include <stdlib.h>
+#include <netinet/in.h>
+#include <string.h>
 }
 
 #include "Arduino.h"
@@ -10,7 +15,7 @@ extern "C" {
 #include "Ethernet.h"
 #include "EthernetClient.h"
 #include "EthernetServer.h"
-#include "Dns.h"
+//#include "Dns.h"
 
 uint16_t EthernetClient::_srcport = 49152;      //Use IANA recommended ephemeral port range 49152-65535
 
@@ -23,11 +28,11 @@ EthernetClient::EthernetClient(uint8_t sock) : _sock(sock) {
 int EthernetClient::connect(const char* host, uint16_t port) {
   // Look up the host first
   int ret = 0;
-  DNSClient dns;
-  IPAddress remote_addr;
+  // DNSClient dns;
+  // IPAddress remote_addr;
 
-  dns.begin(Ethernet.dnsServerIP());
-  ret = dns.getHostByName(host, remote_addr);
+  // dns.begin(Ethernet.dnsServerIP());
+  // ret = dns.getHostByName(host, remote_addr);
   if (ret == 1) {
     return connect(remote_addr, port);
   } else {
@@ -36,37 +41,29 @@ int EthernetClient::connect(const char* host, uint16_t port) {
 }
 
 int EthernetClient::connect(IPAddress ip, uint16_t port) {
-  if (_sock != MAX_SOCK_NUM)
-    return 0;
-
-  for (int i = 0; i < MAX_SOCK_NUM; i++) {
-    uint8_t s = socketStatus(i);
-    if (s == SnSR::CLOSED || s == SnSR::FIN_WAIT || s == SnSR::CLOSE_WAIT) {
-      _sock = i;
-      break;
-    }
-  }
-
-  if (_sock == MAX_SOCK_NUM)
-    return 0;
-
   _srcport++;
   if (_srcport == 0) _srcport = 49152;          //Use IANA recommended ephemeral port range 49152-65535
-  socket(_sock, SnMR::TCP, _srcport, 0);
 
-  if (!::connect(_sock, rawIPAddress(ip), port)) {
-    _sock = MAX_SOCK_NUM;
+  struct sockaddr_in address;
+  int sock = 0, valread;
+  struct sockaddr_in serv_addr;
+
+  if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    printf("\n Socket creation error \n");
     return 0;
   }
-
-  while (status() != SnSR::ESTABLISHED) {
-    delay(1);
-    if (status() == SnSR::CLOSED) {
-      _sock = MAX_SOCK_NUM;
-      return 0;
-    }
+  
+  memset(&serv_addr, '\0', sizeof(serv_addr));
+  
+  serv_addr.sin_family = AF_INET;
+  serv_addr.sin_addr = 0;	// FIX.ME want correct format of ip address
+  serv_addr.sin_port = htons(PORT);
+      
+  
+  if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+    printf("\nConnection Failed \n");
+    return 0;
   }
-
   return 1;
 }
 
@@ -79,7 +76,7 @@ size_t EthernetClient::write(const uint8_t *buf, size_t size) {
     setWriteError();
     return 0;
   }
-  if (!send(_sock, buf, size)) {
+  if (!send(_sock, buf, size, 0)) {
     setWriteError();
     return 0;
   }

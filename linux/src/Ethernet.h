@@ -12,19 +12,21 @@
 
 class EthernetClass {
 private:
-  IPAddress _dnsServerAddress;
-  // DhcpClass* _dhcp;
+  IPAddress _localIP;
+  IPAddress _subnetMask;
+  IPAddress _gatewayIP;
+  IPAddress _dnsServerIP;
 public:
   static uint8_t _state[MAX_SOCK_NUM];
   static uint16_t _server_port[MAX_SOCK_NUM];
-  // Returns 0 if the DHCP configuration failed, and 1 if it succeeded
-  int begin();
-  int maintain();
 
-  IPAddress localIP();
-  IPAddress subnetMask();
-  IPAddress gatewayIP();
-  IPAddress dnsServerIP();
+  int begin() { return 1; };
+  int maintain() { return 1; };
+
+  IPAddress localIP() { return _localIP; };
+  IPAddress subnetMask() { return _subnetMask; };
+  IPAddress gatewayIP() { return _gatewayIP; };
+  IPAddress dnsServerIP() { return _dnsServerIP; };
 
   friend class EthernetClient;
   friend class EthernetServer;
