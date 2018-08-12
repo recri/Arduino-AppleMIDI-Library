@@ -1,14 +1,14 @@
 
-#include <SPI.h>
+//#include <SPI.h>
 #include <Ethernet.h>
 
 #include "AppleMidi.h"
 
 // Enter a MAC address for your controller below.
 // Newer Ethernet shields have a MAC address printed on a sticker on the shield
-byte mac[] = {
-  0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
-};
+//byte mac[] = {
+//  0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
+//};
 
 unsigned long t0 = millis();
 bool isConnected = false;
@@ -17,6 +17,52 @@ APPLEMIDI_CREATE_DEFAULT_INSTANCE(); // see definition in AppleMidi_Defs.h
 
 IPAddress remote(192, 168, 0, 119); // replace with remote ip
 
+// ====================================================================================
+// Event handlers for incoming MIDI messages
+// ====================================================================================
+
+// -----------------------------------------------------------------------------
+// rtpMIDI session. Device connected
+// -----------------------------------------------------------------------------
+void OnAppleMidiConnected(uint32_t ssrc, char* name) {
+  isConnected = true;
+  Serial.print("Connected to session ");
+  Serial.println(name);
+}
+
+// -----------------------------------------------------------------------------
+// rtpMIDI session. Device disconnected
+// -----------------------------------------------------------------------------
+void OnAppleMidiDisconnected(uint32_t ssrc) {
+  isConnected = false;
+  Serial.println("Disconnected");
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void OnAppleMidiNoteOn(byte channel, byte note, byte velocity) {
+  Serial.print("Incoming NoteOn from channel:");
+  Serial.print(channel);
+  Serial.print(" note:");
+  Serial.print(note);
+  Serial.print(" velocity:");
+  Serial.print(velocity);
+  Serial.println();
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void OnAppleMidiNoteOff(byte channel, byte note, byte velocity) {
+  Serial.print("Incoming NoteOff from channel:");
+  Serial.print(channel);
+  Serial.print(" note:");
+  Serial.print(note);
+  Serial.print(" velocity:");
+  Serial.print(velocity);
+  Serial.println();
+}
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
@@ -88,49 +134,8 @@ void loop()
   }
 }
 
-// ====================================================================================
-// Event handlers for incoming MIDI messages
-// ====================================================================================
-
-// -----------------------------------------------------------------------------
-// rtpMIDI session. Device connected
-// -----------------------------------------------------------------------------
-void OnAppleMidiConnected(uint32_t ssrc, char* name) {
-  isConnected = true;
-  Serial.print("Connected to session ");
-  Serial.println(name);
-}
-
-// -----------------------------------------------------------------------------
-// rtpMIDI session. Device disconnected
-// -----------------------------------------------------------------------------
-void OnAppleMidiDisconnected(uint32_t ssrc) {
-  isConnected = false;
-  Serial.println("Disconnected");
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void OnAppleMidiNoteOn(byte channel, byte note, byte velocity) {
-  Serial.print("Incoming NoteOn from channel:");
-  Serial.print(channel);
-  Serial.print(" note:");
-  Serial.print(note);
-  Serial.print(" velocity:");
-  Serial.print(velocity);
-  Serial.println();
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void OnAppleMidiNoteOff(byte channel, byte note, byte velocity) {
-  Serial.print("Incoming NoteOff from channel:");
-  Serial.print(channel);
-  Serial.print(" note:");
-  Serial.print(note);
-  Serial.print(" velocity:");
-  Serial.print(velocity);
-  Serial.println();
+int main() {
+  setup();
+  while (1) loop();
+  return 0;
 }
