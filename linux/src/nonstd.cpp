@@ -74,6 +74,7 @@ int isinff (float x);
 
 char * dtostrf(float val, int width, unsigned int precision, char *buf)
 {
+#if 0
 	int decpt, sign, reqd, pad;
 	const char *s, *e;
 	char *p;
@@ -213,6 +214,9 @@ char * dtostrf(float val, int width, unsigned int precision, char *buf)
 	//char format[20];
 	//sprintf(format, "%%%d.%df", width, precision);
 	//sprintf(buf, format, val);
+	return buf;
+#endif
+	*buf = 0;
 	return buf;
 }
 
