@@ -1,1 +1,325 @@
 * Arduino AppleMidi becomes Linux AppleMidi with a few hacks.
+  Ha, ha.  It's a few more hacks than expected, but it seems to be under control.
+
+  The Ethernet* classes are all polluted with hardware specific references
+  to w5100.h details.  But the key, I think, is to rewrite utility/socket.*
+  and simply make the _sock token into a file descriptor.  So I will be making
+  another pass over EthernetClient, EthernetServer, and EthernetUdp which are
+  all hooking into the low level routines, writing to keep the lowlevel calls while
+  eliminating the low level pollution.
+
+* the AppleMidi.hpp constructs the top level and appears to do all the udp handling
+AppleMidi.h:template<class UdpClass>
+AppleMidi.h:	UdpClass _controlPort;
+AppleMidi.h:	UdpClass _dataPort;
+AppleMidi.h:	RtpMidi<UdpClass>	_rtpMidi;
+AppleMidi.h:	inline void write(UdpClass&, AppleMIDI_InvitationRejected, IPAddress ip, uint16_t port);
+AppleMidi.h:	inline void write(UdpClass&, AppleMIDI_InvitationAccepted, IPAddress ip, uint16_t port);
+AppleMidi.h:	inline void write(UdpClass&, AppleMIDI_Syncronization, IPAddress ip, uint16_t port);
+AppleMidi.h:	inline void write(UdpClass&, AppleMIDI_Invitation, IPAddress ip, uint16_t port);
+AppleMidi.h:	inline void write(UdpClass&, AppleMIDI_BitrateReceiveLimit, IPAddress ip, uint16_t port);
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline AppleMidi_Class<UdpClass>::AppleMidi_Class()
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline AppleMidi_Class<UdpClass>::~AppleMidi_Class()
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline bool AppleMidi_Class<UdpClass>::begin(const char* sessionName, uint16_t port)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::run()
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline uint32_t AppleMidi_Class<UdpClass>::getSynchronizationSource()
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::invite(IPAddress ip, uint16_t port)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::OnInvitation(void* sender, AppleMIDI_Invitation& invitation)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::OnEndSession(void* sender, AppleMIDI_EndSession& sessionEnd)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::OnReceiverFeedback(void* sender, AppleMIDI_ReceiverFeedback& receiverFeedback)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::OnInvitationAccepted(void* sender, AppleMIDI_InvitationAccepted& invitationAccepted)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::OnControlInvitationAccepted(void* sender, AppleMIDI_InvitationAccepted& invitationAccepted)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::OnContentInvitationAccepted(void* sender, AppleMIDI_InvitationAccepted& invitationAccepted)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::OnControlInvitation(void* sender, AppleMIDI_Invitation& invitation)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::OnContentInvitation(void* sender, AppleMIDI_Invitation& invitation)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::OnSyncronization(void* sender, AppleMIDI_Syncronization& synchronization)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::OnBitrateReceiveLimit(void* sender, AppleMIDI_BitrateReceiveLimit& bitrateReceiveLimit)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:bool AppleMidi_Class<UdpClass>::PassesFilter(void* sender, DataByte type, DataByte channel)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::OnNoteOn(void* sender, DataByte channel, DataByte note, DataByte velocity)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::OnNoteOff(void* sender, DataByte channel, DataByte note, DataByte velocity)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::OnPolyPressure(void* sender, DataByte channel, DataByte note, DataByte pressure)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::OnChannelPressure(void* sender, DataByte channel, DataByte pressure)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::OnPitchBendChange(void* sender, DataByte channel, int pitch)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::OnProgramChange(void* sender, DataByte channel, DataByte program)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::OnControlChange(void* sender, DataByte channel, DataByte controller, DataByte value)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::OnSongSelect(void* sender, DataByte songNr)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::OnSongPosition(void* sender, unsigned short value)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::OnTimeCodeQuarterFrame(void* sender, DataByte value)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::OnTuneRequest(void* sender)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::OnClock(void* sender)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::OnStart(void* sender)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::OnContinue(void* sender)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::OnStop(void* sender)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::OnActiveSensing(void* sender)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::OnReset(void* sender)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::OnSysEx(void* sender, const byte* data, uint16_t length)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:int AppleMidi_Class<UdpClass>::GetFreeSessionSlot()
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:int AppleMidi_Class<UdpClass>::GetSessionSlotUsingSSrc(const uint32_t ssrc)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:int AppleMidi_Class<UdpClass>::GetSessionSlotUsingInitiatorToken(const uint32_t initiatorToken)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::CompleteLocalSessionControl(AppleMIDI_InvitationAccepted& invitationAccepted)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::CompleteLocalSessionContent(AppleMIDI_InvitationAccepted& invitationAccepted)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::CreateLocalSession(const int i, const uint32_t ssrc)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::CreateRemoteSession(IPAddress ip, uint16_t port)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::DeleteSession(const uint32_t ssrc)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::DeleteSession(int slot)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::DeleteSessions()
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:void AppleMidi_Class<UdpClass>::DumpSession()
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline uint32_t AppleMidi_Class<UdpClass>::createInitiatorToken()
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::ManageInvites()
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::ManageTiming()
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::write(UdpClass& udp, AppleMIDI_InvitationRejected ir, IPAddress ip, uint16_t port)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::write(UdpClass& udp, AppleMIDI_InvitationAccepted ia, IPAddress ip, uint16_t port)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::write(UdpClass& udp, AppleMIDI_Syncronization sy, IPAddress ip, uint16_t port)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::write(UdpClass& udp, AppleMIDI_Invitation in, IPAddress ip, uint16_t port)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::write(UdpClass& udp, AppleMIDI_BitrateReceiveLimit in, IPAddress ip, uint16_t port)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::send(MidiType inType, DataByte inData1, DataByte inData2, Channel inChannel)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::send(MidiType inType, DataByte inData1, DataByte inData2)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::send(MidiType inType, DataByte inData)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::send(MidiType inType)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::sendSysEx(byte s, const byte* data, byte e, uint16_t length)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::internalSend(Session_t& session, MidiType inType, DataByte inData1, DataByte inData2, Channel inChannel)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::internalSend(Session_t& session, MidiType inType)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::internalSend(Session_t& session, MidiType inType, DataByte inData)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::internalSend(Session_t& session, MidiType inType, DataByte inData1, DataByte inData2)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::internalSendSysEx(Session_t& session, byte s, const byte* data, byte e, uint16_t length)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline StatusByte AppleMidi_Class<UdpClass>::getStatus(MidiType inType, Channel inChannel) const
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::noteOn(DataByte inNoteNumber, DataByte inVelocity, Channel  inChannel)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::noteOff(DataByte inNoteNumber, DataByte inVelocity, Channel inChannel)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::programChange(DataByte inProgramNumber, Channel inChannel)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::controlChange(DataByte inControlNumber, DataByte inControlValue, Channel inChannel)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::polyPressure(DataByte inNoteNumber, DataByte inPressure, Channel inChannel)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::afterTouch(DataByte inPressure, Channel inChannel)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::pitchBend(int inPitchValue, Channel inChannel)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::pitchBend(double inPitchValue, Channel inChannel)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::sysEx(const byte* data, uint16_t length)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::tuneRequest()
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::activeSensing()
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::start()
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::_continue()
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::stop()
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::timeCodeQuarterFrame(DataByte inTypeNibble, DataByte inValuesNibble)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::timeCodeQuarterFrame(DataByte inData)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::songPosition(unsigned short inBeats)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::songSelect(DataByte inSongNumber)
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::reset()
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::clock()
+AppleMidi.hpp:template<class UdpClass>
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::tick()
+AppleMidi.hpp:template<class UdpClass> inline void AppleMidi_Class<UdpClass>::OnConnected(void(*fptr)(uint32_t, char*))    { mConnectedCallback = fptr; }
+AppleMidi.hpp:template<class UdpClass> inline void AppleMidi_Class<UdpClass>::OnDisconnected(void(*fptr)(uint32_t))      { mDisconnectedCallback = fptr; }
+AppleMidi.hpp:template<class UdpClass> inline void AppleMidi_Class<UdpClass>::OnReceiveNoteOff(void(*fptr)(byte channel, byte note, byte velocity))          { mNoteOffCallback = fptr; }
+AppleMidi.hpp:template<class UdpClass> inline void AppleMidi_Class<UdpClass>::OnReceiveNoteOn(void(*fptr)(byte channel, byte note, byte velocity))           { mNoteOnCallback = fptr; }
+AppleMidi.hpp:template<class UdpClass> inline void AppleMidi_Class<UdpClass>::OnReceiveAfterTouchPoly(void(*fptr)(byte channel, byte note, byte pressure))   { mAfterTouchPolyCallback = fptr; }
+AppleMidi.hpp:template<class UdpClass> inline void AppleMidi_Class<UdpClass>::OnReceiveControlChange(void(*fptr)(byte channel, byte number, byte value))     { mControlChangeCallback = fptr; }
+AppleMidi.hpp:template<class UdpClass> inline void AppleMidi_Class<UdpClass>::OnReceiveProgramChange(void(*fptr)(byte channel, byte number))                 { mProgramChangeCallback = fptr; }
+AppleMidi.hpp:template<class UdpClass> inline void AppleMidi_Class<UdpClass>::OnReceiveAfterTouchChannel(void(*fptr)(byte channel, byte pressure))           { mAfterTouchChannelCallback = fptr; }
+AppleMidi.hpp:template<class UdpClass> inline void AppleMidi_Class<UdpClass>::OnReceivePitchBend(void(*fptr)(byte channel, int bend))                        { mPitchBendCallback = fptr; }
+AppleMidi.hpp:template<class UdpClass> inline void AppleMidi_Class<UdpClass>::OnReceiveSysEx(void(*fptr)(const byte* array, uint16_t size))                  { mSysExCallback = fptr; }
+AppleMidi.hpp:template<class UdpClass> inline void AppleMidi_Class<UdpClass>::OnReceiveTimeCodeQuarterFrame(void(*fptr)(byte data))                          { mTimeCodeQuarterFrameCallback = fptr; }
+AppleMidi.hpp:template<class UdpClass> inline void AppleMidi_Class<UdpClass>::OnReceiveSongPosition(void(*fptr)(unsigned short beats))                       { mSongPositionCallback = fptr; }
+AppleMidi.hpp:template<class UdpClass> inline void AppleMidi_Class<UdpClass>::OnReceiveSongSelect(void(*fptr)(byte songnumber))                              { mSongSelectCallback = fptr; }
+AppleMidi.hpp:template<class UdpClass> inline void AppleMidi_Class<UdpClass>::OnReceiveTuneRequest(void(*fptr)(void))                                        { mTuneRequestCallback = fptr; }
+AppleMidi.hpp:template<class UdpClass> inline void AppleMidi_Class<UdpClass>::OnReceiveClock(void(*fptr)(void))                                              { mClockCallback = fptr; }
+AppleMidi.hpp:template<class UdpClass> inline void AppleMidi_Class<UdpClass>::OnReceiveStart(void(*fptr)(void))                                              { mStartCallback = fptr; }
+AppleMidi.hpp:template<class UdpClass> inline void AppleMidi_Class<UdpClass>::OnReceiveContinue(void(*fptr)(void))                                           { mContinueCallback = fptr; }
+AppleMidi.hpp:template<class UdpClass> inline void AppleMidi_Class<UdpClass>::OnReceiveStop(void(*fptr)(void))                                               { mStopCallback = fptr; }
+AppleMidi.hpp:template<class UdpClass> inline void AppleMidi_Class<UdpClass>::OnReceiveActiveSensing(void(*fptr)(void))                                      { mActiveSensingCallback = fptr; }
+AppleMidi.hpp:template<class UdpClass> inline void AppleMidi_Class<UdpClass>::OnReceiveReset(void(*fptr)(void))                                              { mResetCallback = fptr; }
+------------------------------------------------------------------------
+AppleMidi.h:	UdpClass _controlPort;
+AppleMidi.h:	Dissector _controlPortDissector;
+AppleMidi.hpp:	_controlPort.begin(Port);
+AppleMidi.hpp:	_controlPortDissector.init(Port, this);
+AppleMidi.hpp:	_controlPortDissector.addPacketDissector(&PacketAppleMidi::dissect_apple_midi);	// Add parser
+AppleMidi.hpp:	int packetSize = _controlPort.parsePacket();
+AppleMidi.hpp:		packetSize = _controlPort.read(_packetBuffer, sizeof(_packetBuffer));
+AppleMidi.hpp:		_controlPortDissector.addPacket(_packetBuffer, packetSize);
+AppleMidi.hpp:			write(_controlPort, invitationRejected, _controlPort.remoteIP(), _controlPort.remotePort());
+AppleMidi.hpp:	write(_controlPort, acceptInvitation, _controlPort.remoteIP(), _controlPort.remotePort());
+AppleMidi.hpp:	write(_controlPort, rateLimit, _controlPort.remoteIP(), _controlPort.remotePort());
+AppleMidi.hpp:			write(_controlPort, invitation, session->invite.remoteHost, session->invite.remotePort);
+AppleMidi.hpp:				write(_controlPort, invitation, session->invite.remoteHost, session->invite.remotePort);
+------------------------------------------------------------------------
+AppleMidi.h:	UdpClass _dataPort;
+AppleMidi.h:	Dissector _dataPortDissector;
+AppleMidi.hpp:	_dataPort.begin(Port + 1);
+AppleMidi.hpp:	_dataPortDissector.init(Port + 1, this);
+AppleMidi.hpp:	_dataPortDissector.addPacketDissector(&PacketRtpMidi::dissect_rtp_midi);		// Add parser
+AppleMidi.hpp:	_dataPortDissector.addPacketDissector(&PacketAppleMidi::dissect_apple_midi);	// Add parser
+AppleMidi.hpp:	packetSize = _dataPort.parsePacket();
+AppleMidi.hpp:		packetSize = _dataPort.read(_packetBuffer, sizeof(_packetBuffer));
+AppleMidi.hpp:		_dataPortDissector.addPacket(_packetBuffer, packetSize);
+AppleMidi.hpp:		write(_dataPort, invitationRejected, _dataPort.remoteIP(), _dataPort.remotePort());
+AppleMidi.hpp:	write(_dataPort, acceptInvitation, _dataPort.remoteIP(), _dataPort.remotePort());
+AppleMidi.hpp:	Sessions[i].contentIP = _dataPort.remoteIP();
+AppleMidi.hpp:	Sessions[i].contentPort = _dataPort.remotePort();
+AppleMidi.hpp:	write(_dataPort, synchronizationResponse, _dataPort.remoteIP(), _dataPort.remotePort());
+AppleMidi.hpp:			write(_dataPort, invitation, session->invite.remoteHost, session->invite.remotePort + 1);
+AppleMidi.hpp:				write(_dataPort, invitation, session->invite.remoteHost, session->invite.remotePort + 1);
+AppleMidi.hpp:					write(_dataPort, synchronizationResponse, Sessions[i].contentIP, Sessions[i].contentPort);
+AppleMidi.hpp:	//	synchronizationResponse.write(&_dataPort);
+AppleMidi.hpp:		_rtpMidi.beginWrite(_dataPort, session.contentIP, session.contentPort);
+AppleMidi.hpp:		_dataPort.write(&length, 1);
+AppleMidi.hpp:			_dataPort.write(&mRunningStatus_TX, 1);
+AppleMidi.hpp:		_dataPort.write(&status, sizeof(status));
+AppleMidi.hpp:		_dataPort.write(&inData1, sizeof(inData1));
+AppleMidi.hpp:			_dataPort.write(&inData2, sizeof(inData2));
+AppleMidi.hpp:		_rtpMidi.endWrite(_dataPort);
+AppleMidi.hpp:	_rtpMidi.beginWrite(_dataPort, session.contentIP, session.contentPort);
+AppleMidi.hpp:	_dataPort.write(&length, 1);
+AppleMidi.hpp:		_dataPort.write(&octet, 1);
+AppleMidi.hpp:	_rtpMidi.endWrite(_dataPort);
+AppleMidi.hpp:	_rtpMidi.beginWrite(_dataPort, session.contentIP, session.contentPort);
+AppleMidi.hpp:	_dataPort.write(&length, 1);
+AppleMidi.hpp:		_dataPort.write(&octet, 1);
+AppleMidi.hpp:		_dataPort.write(&inData, 1);
+AppleMidi.hpp:	_rtpMidi.endWrite(_dataPort);
+AppleMidi.hpp:	_rtpMidi.beginWrite(_dataPort, session.contentIP, session.contentPort);
+AppleMidi.hpp:	_dataPort.write(&length, 1);
+AppleMidi.hpp:		_dataPort.write(&octet, 1);
+AppleMidi.hpp:		_dataPort.write(&inData1, 1);
+AppleMidi.hpp:		_dataPort.write(&inData2, 1);
+AppleMidi.hpp:	_rtpMidi.endWrite(_dataPort);
+AppleMidi.hpp:	_rtpMidi.beginWrite(_dataPort, session.contentIP, session.contentPort);
+AppleMidi.hpp:	_dataPort.write(reinterpret_cast<uint8_t*>(&ss), sizeof(ss)); // write the 2 bytes
+AppleMidi.hpp:	_dataPort.write(&s, 1);
+AppleMidi.hpp:	_dataPort.write(data, length); 
+AppleMidi.hpp:	_dataPort.write(&e, 1);
+AppleMidi.hpp:	_rtpMidi.endWrite(_dataPort);
+------------------------------------------------------------------------
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::write(UdpClass& udp, AppleMIDI_InvitationRejected ir, IPAddress ip, uint16_t port)
+AppleMidi.hpp:	int success = udp.beginPacket(ip, port);
+AppleMidi.hpp:	Debug::Assert(success, "udp.beginPacket failed");
+AppleMidi.hpp:		size_t bytesWritten = udp.write(reinterpret_cast<uint8_t*>(&ir), sizeof(ir));
+AppleMidi.hpp:	success = udp.endPacket();
+AppleMidi.hpp:	Debug::Assert(success, "udp.endPacket failed");
+AppleMidi.hpp:	udp.flush();
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::write(UdpClass& udp, AppleMIDI_InvitationAccepted ia, IPAddress ip, uint16_t port)
+AppleMidi.hpp:	int success = udp.beginPacket(ip, port);
+AppleMidi.hpp:	Debug::Assert(success, "udp.beginPacket failed");
+AppleMidi.hpp:		size_t bytesWritten = udp.write(reinterpret_cast<uint8_t*>(&ia), ia.getLength());
+AppleMidi.hpp:	success = udp.endPacket();
+AppleMidi.hpp:	Debug::Assert(success, "udp.endPacket failed");
+AppleMidi.hpp:	udp.flush();
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::write(UdpClass& udp, AppleMIDI_Syncronization sy, IPAddress ip, uint16_t port)
+AppleMidi.hpp:	int success = udp.beginPacket(ip, port);
+AppleMidi.hpp:	Debug::Assert(success, "udp.beginPacket failed");
+AppleMidi.hpp:	size_t bytesWritten = udp.write(reinterpret_cast<uint8_t*>(&sy), sizeof(sy));
+AppleMidi.hpp:	success = udp.endPacket();
+AppleMidi.hpp:	Debug::Assert(success, "udp.endPacket failed");
+AppleMidi.hpp:	udp.flush();
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::write(UdpClass& udp, AppleMIDI_Invitation in, IPAddress ip, uint16_t port)
+AppleMidi.hpp:	int success = udp.beginPacket(ip, port);
+AppleMidi.hpp:	Debug::Assert(success, "udp.beginPacket failed");
+AppleMidi.hpp:		size_t bytesWritten = udp.write(reinterpret_cast<uint8_t*>(&in), in.getLength());
+AppleMidi.hpp:	success = udp.endPacket();
+AppleMidi.hpp:	Debug::Assert(success, "udp.endPacket failed");
+AppleMidi.hpp:	udp.flush();
+AppleMidi.hpp:inline void AppleMidi_Class<UdpClass>::write(UdpClass& udp, AppleMIDI_BitrateReceiveLimit in, IPAddress ip, uint16_t port)
+AppleMidi.hpp:	int success = udp.beginPacket(ip, port);
+AppleMidi.hpp:	Debug::Assert(success, "udp.beginPacket failed");
+AppleMidi.hpp:		size_t bytesWritten = udp.write(reinterpret_cast<uint8_t*>(&in), sizeof(in));
+AppleMidi.hpp:	success = udp.endPacket();
+AppleMidi.hpp:	Debug::Assert(success, "udp.endPacket failed");
+AppleMidi.hpp:	udp.flush();
+------------------------------------------------------------------------
+int success = udp.beginPacket(ip, port);
+size_t bytesWritten = udp.write(reinterpret_cast<uint8_t*>(&in), in.getLength());
+success = udp.endPacket();
+udp.flush();
+_dataPort.write(data, length);
+_dataPort.begin(Port + 1);
+packetSize = _dataPort.parsePacket();
+packetSize = _dataPort.read(_packetBuffer, sizeof(_packetBuffer));
+_dataPort.remoteIP();
+_dataPort.remotePort();
+_controlPort.begin(Port);
+int packetSize = _controlPort.parsePacket();
+_controlPort.remoteIP(), _controlPort.remotePort();
+_rtpMidi.endWrite(_dataPort);
+_rtpMidi.beginWrite(_dataPort, session.contentIP, session.contentPort);

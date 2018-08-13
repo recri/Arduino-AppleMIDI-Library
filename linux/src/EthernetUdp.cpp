@@ -28,13 +28,13 @@
 
 // #include "utility/w5100.h"
 // #include "utility/socket.h"
-#include "Ethernet.h"
+// #include "Ethernet.h"
 #include "EthernetUdp.h"
 // #include "Udp.h"
 // #include "Dns.h"
 
 /* Constructor */
-EthernetUDP::EthernetUDP() : _sock(MAX_SOCK_NUM) {}
+EthernetUDP::EthernetUDP() : _sock(-1) {}
 
 /* Start EthernetUDP socket, listening at local port PORT */
 uint8_t EthernetUDP::begin(uint16_t port) {

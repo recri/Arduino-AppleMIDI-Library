@@ -1,6 +1,7 @@
 
 //#include <SPI.h>
-#include <Ethernet.h>
+//#include <Ethernet.h>
+#include <Arduino.h>
 #include <EthernetUdp.h>
 
 #include "AppleMidi.h"
@@ -75,6 +76,7 @@ void setup()
     ; // wait for serial port to connect. Needed for Leonardo only
   }
 
+#if 0
   Serial.print("Getting IP address...");
 
   if (Ethernet.begin() == 0) {
@@ -87,7 +89,8 @@ void setup()
   Serial.println();
   Serial.print("IP address is ");
   Serial.println(Ethernet.localIP());
-
+#endif
+  
   Serial.print("AppleMIDI Session ");
   Serial.print(AppleMIDI.getSessionName());
   Serial.print(" with SSRC 0x");
