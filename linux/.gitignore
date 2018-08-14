@@ -1,3 +1,9 @@
 *~
 save/*
 examples/initiate-session
+examples/initiate-sessions
+examples/note-on-off-every-second
+examples/realtime-messages
+examples/receive-MTC
+examples/sysex
+

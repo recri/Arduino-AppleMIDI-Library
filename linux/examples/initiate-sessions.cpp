@@ -1,16 +1,18 @@
-
+//
+//#include <SPI.h>
 #include <Arduino.h>
-
 #include <LinuxUdp.h>
 
 #include "AppleMidi.h"
+
 
 unsigned long t0 = millis();
 bool isConnected = false;
 
 APPLEMIDI_CREATE_INSTANCE(LinuxUDP, AppleMIDI); // see definition in AppleMidi_Defs.h
 
-IPAddress remote(127,0,0,1); // replace with remote ip
+IPAddress remote1(192, 168, 0, 119); // replace with remote ip
+IPAddress remote2(192, 168, 0, 127); // replace with remote ip
 
 // ====================================================================================
 // Event handlers for incoming MIDI messages
@@ -69,34 +71,35 @@ void setup()
     ; // wait for serial port to connect. Needed for Leonardo only
   }
 
-#if 0
-  Serial.print("Getting IP address...");
+  //  Serial.print("Getting IP address...");
 
-  if (Ethernet.begin() == 0) {
-    Serial.println();
-    Serial.println( "Failed DHCP, check network cable & reboot" );
-    for (;;)
-      ;
-  }
+  //  if (Ethernet.begin(mac) == 0) {
+  //    Serial.println();
+  //    Serial.println( "Failed DHCP, check network cable & reboot" );
+  //    for (;;)
+  //      ;
+  //  }
 
-  Serial.println();
-  Serial.print("IP address is ");
-  Serial.println(Ethernet.localIP());
-#endif
-  
+  //  Serial.println();
+  //  Serial.print("IP address is ");
+  //  Serial.println(Ethernet.localIP());
+
+  // Create a session and wait for a remote host to connect to us
+  AppleMIDI.begin("Arduino");
+
   Serial.print("AppleMIDI Session ");
   Serial.print(AppleMIDI.getSessionName());
   Serial.print(" with SSRC 0x");
   Serial.println(AppleMIDI.getSynchronizationSource(), HEX);
 
-  // Create a session and wait for a remote host to connect to us
-  AppleMIDI.begin("test");
-
   Serial.print("OK, now make an active connection to ");
-  Serial.println(remote);
+  Serial.print(remote1);
+  Serial.print(" and ");
+  Serial.println(remote2);
 
   // This is the invite to the remote participant
-  AppleMIDI.invite(remote);
+  AppleMIDI.invite(remote1);
+  AppleMIDI.invite(remote2);
 
   AppleMIDI.OnConnected(OnAppleMidiConnected);
   AppleMIDI.OnDisconnected(OnAppleMidiDisconnected);
@@ -117,7 +120,7 @@ void loop()
 
   // send a note every second
   // (dont cáll delay(1000) as it will stall the pipeline)
-  if (isConnected && (millis() - t0) > 1000)
+  if (isConnected && (millis() - t0) > 250)
   {
     t0 = millis();
     //   Serial.print(".");
@@ -131,8 +134,4 @@ void loop()
   }
 }
 
-int main() {
-  setup();
-  while (1) loop();
-  return 0;
-}
+int main() { setup(); while (1) loop(); return 0; }

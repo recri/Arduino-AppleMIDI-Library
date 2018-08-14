@@ -1,5 +1,5 @@
-
 #include <Arduino.h>
+#define F(x) x
 
 #include <LinuxUdp.h>
 
@@ -10,7 +10,13 @@ bool isConnected = false;
 
 APPLEMIDI_CREATE_INSTANCE(LinuxUDP, AppleMIDI); // see definition in AppleMidi_Defs.h
 
-IPAddress remote(127,0,0,1); // replace with remote ip
+// Code size:
+//
+// IDE 1.8.3
+//
+// Arduino Ethernet / Uno
+// Sketch uses 23976 bytes (74%) of program storage space. Maximum is 32256 bytes.
+// Global variables use 969 bytes (47%) of dynamic memory, leaving 1079 bytes for local variables. Maximum is 2048 bytes.
 
 // ====================================================================================
 // Event handlers for incoming MIDI messages
@@ -21,7 +27,7 @@ IPAddress remote(127,0,0,1); // replace with remote ip
 // -----------------------------------------------------------------------------
 void OnAppleMidiConnected(uint32_t ssrc, char* name) {
   isConnected = true;
-  Serial.print("Connected to session ");
+  Serial.print(F("Connected to session "));
   Serial.println(name);
 }
 
@@ -30,18 +36,18 @@ void OnAppleMidiConnected(uint32_t ssrc, char* name) {
 // -----------------------------------------------------------------------------
 void OnAppleMidiDisconnected(uint32_t ssrc) {
   isConnected = false;
-  Serial.println("Disconnected");
+  Serial.println(F("Disconnected"));
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void OnAppleMidiNoteOn(byte channel, byte note, byte velocity) {
-  Serial.print("Incoming NoteOn from channel:");
+static void OnAppleMidiNoteOn(byte channel, byte note, byte velocity) {
+  Serial.print(F("Incoming NoteOn from channel:"));
   Serial.print(channel);
-  Serial.print(" note:");
+  Serial.print(F(" note:"));
   Serial.print(note);
-  Serial.print(" velocity:");
+  Serial.print(F(" velocity:"));
   Serial.print(velocity);
   Serial.println();
 }
@@ -49,12 +55,12 @@ void OnAppleMidiNoteOn(byte channel, byte note, byte velocity) {
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void OnAppleMidiNoteOff(byte channel, byte note, byte velocity) {
-  Serial.print("Incoming NoteOff from channel:");
+static void OnAppleMidiNoteOff(byte channel, byte note, byte velocity) {
+  Serial.print(F("Incoming NoteOff from channel:"));
   Serial.print(channel);
-  Serial.print(" note:");
+  Serial.print(F(" note:"));
   Serial.print(note);
-  Serial.print(" velocity:");
+  Serial.print(F(" velocity:"));
   Serial.print(velocity);
   Serial.println();
 }
@@ -69,34 +75,15 @@ void setup()
     ; // wait for serial port to connect. Needed for Leonardo only
   }
 
-#if 0
-  Serial.print("Getting IP address...");
-
-  if (Ethernet.begin() == 0) {
-    Serial.println();
-    Serial.println( "Failed DHCP, check network cable & reboot" );
-    for (;;)
-      ;
-  }
-
-  Serial.println();
-  Serial.print("IP address is ");
-  Serial.println(Ethernet.localIP());
-#endif
-  
-  Serial.print("AppleMIDI Session ");
-  Serial.print(AppleMIDI.getSessionName());
-  Serial.print(" with SSRC 0x");
-  Serial.println(AppleMIDI.getSynchronizationSource(), HEX);
+  Serial.println(F("OK, now make sure you an rtpMIDI session that is Enabled"));
+  Serial.print(F("Add device named Arduino with Host/Port "));
+  // Serial.print(Ethernet.localIP());
+  Serial.println(F("<your-ip>:5004"));
+  Serial.println(F("Then press the Connect button"));
+  Serial.println(F("Then open a MIDI listener (eg MIDI-OX) and monitor incoming notes"));
 
   // Create a session and wait for a remote host to connect to us
   AppleMIDI.begin("test");
-
-  Serial.print("OK, now make an active connection to ");
-  Serial.println(remote);
-
-  // This is the invite to the remote participant
-  AppleMIDI.invite(remote);
 
   AppleMIDI.OnConnected(OnAppleMidiConnected);
   AppleMIDI.OnDisconnected(OnAppleMidiDisconnected);
@@ -104,7 +91,7 @@ void setup()
   AppleMIDI.OnReceiveNoteOn(OnAppleMidiNoteOn);
   AppleMIDI.OnReceiveNoteOff(OnAppleMidiNoteOff);
 
-  Serial.println("Sending NoteOn/Off of note 45, every second");
+  Serial.println(F("Sending NoteOn/Off of note 45, every second"));
 }
 
 // -----------------------------------------------------------------------------
@@ -120,19 +107,15 @@ void loop()
   if (isConnected && (millis() - t0) > 1000)
   {
     t0 = millis();
-    //   Serial.print(".");
+    //   Serial.print(F(".");
 
-    int note = 45;
-    int velocity = 55;
-    int channel = 1;
+    byte note = 45;
+    byte velocity = 55;
+    byte channel = 1;
 
     AppleMIDI.noteOn(note, velocity, channel);
     AppleMIDI.noteOff(note, velocity, channel);
   }
 }
 
-int main() {
-  setup();
-  while (1) loop();
-  return 0;
-}
+int main() { setup(); while(1) loop(); return 0; }

@@ -2,9 +2,17 @@
 #define _arduino_h 1
 
 #include <inttypes.h>
-#include <math.h>
-#include <stdio.h>
+#include <stdint.h>
+#include <sys/types.h>
 #include <time.h>
+#include <math.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <string.h>	/* for memcpy */
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <netdb.h>
   
 typedef bool boolean;
 typedef uint8_t byte;
