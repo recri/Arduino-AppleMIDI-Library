@@ -1,5 +1,3 @@
-//
-//#include <SPI.h>
 #include <Arduino.h>
 #include <LinuxUdp.h>
 
@@ -11,8 +9,9 @@ bool isConnected = false;
 
 APPLEMIDI_CREATE_INSTANCE(LinuxUDP, AppleMIDI); // see definition in AppleMidi_Defs.h
 
-IPAddress remote1(192, 168, 0, 119); // replace with remote ip
-IPAddress remote2(192, 168, 0, 127); // replace with remote ip
+IPAddress local;		// replace with local ip
+IPAddress remote1;		// replace with remote ip
+IPAddress remote2;		// replace with remote ip
 
 // ====================================================================================
 // Event handlers for incoming MIDI messages
@@ -63,26 +62,11 @@ void OnAppleMidiNoteOff(byte channel, byte note, byte velocity) {
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void setup()
-{
-  // Serial communications and wait for port to open:
-  Serial.begin(115200);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for Leonardo only
-  }
-
-  //  Serial.print("Getting IP address...");
-
-  //  if (Ethernet.begin(mac) == 0) {
-  //    Serial.println();
-  //    Serial.println( "Failed DHCP, check network cable & reboot" );
-  //    for (;;)
-  //      ;
-  //  }
+void setup() {
 
   //  Serial.println();
-  //  Serial.print("IP address is ");
-  //  Serial.println(Ethernet.localIP());
+  Serial.print("IP address is ");
+  Serial.println(local);
 
   // Create a session and wait for a remote host to connect to us
   AppleMIDI.begin("Arduino");
@@ -113,8 +97,7 @@ void setup()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void loop()
-{
+void loop() {
   // Listen to incoming notes
   AppleMIDI.run();
 
@@ -134,4 +117,21 @@ void loop()
   }
 }
 
-int main() { setup(); while (1) loop(); return 0; }
+static int streq(const char *p1, const char *p2) { return strcmp(p1,p2)==0; }
+
+int main(int argc, char *argv[]) {
+  for (int i = 1; i+1 < argc; i += 2) {
+    if (streq(argv[i], "-local"))
+      local.fromString(argv[i+1]);
+    else if (streq(argv[i], "-remote1"))
+      remote1.fromString(argv[i+1]);
+    else if (streq(argv[i], "-remote2"))
+      remote2.fromString(argv[i+1]);
+    else {
+      printf("unrecognized option %s\n", argv[i]);
+      printf("usage: initiate-sessions -local localIP -remote1 remoteIP -remote2 remoteIP\n");
+      return 1;
+    }
+  }
+  setup(); while (1) loop(); return 0;
+}

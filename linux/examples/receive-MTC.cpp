@@ -6,6 +6,7 @@
 #include "AppleMidi.h"
 
 bool isConnected = false;
+IPAddress local;
 
 APPLEMIDI_CREATE_INSTANCE(LinuxUDP, AppleMIDI); // see definition in AppleMidi_Defs.h
 
@@ -50,7 +51,7 @@ void setup()
 
   Serial.println(F("OK, now make sure you an rtpMIDI session that is Enabled"));
   Serial.print(F("Add device named Arduino with Host/Port "));
-  //Serial.print(Ethernet.localIP());
+  Serial.print(local);
   Serial.println(F(":5004"));
   Serial.println(F("Then press the Connect button"));
   Serial.println(F("Then open MIDI-OX, ,<View> <MTC Transport>. Then hit play button and see the MTC messages"));
@@ -73,4 +74,17 @@ void loop()
   AppleMIDI.run();
 }
 
-int main() { setup(); while(1) loop(); return 0; }
+static int streq(const char *p1, const char *p2) { return strcmp(p1,p2)==0; }
+
+int main(int argc, char *argv[]) {
+  for (int i = 1; i+1 < argc; i += 2) {
+    if (streq(argv[i], "-local"))
+      local.fromString(argv[i+1]);
+    else {
+      printf("unrecognized option %s\n", argv[i]);
+      printf("usage: initiate-sessions -local localIP\n");
+      return 1;
+    }
+  }
+  setup(); while(1) loop(); return 0;
+}

@@ -7,6 +7,7 @@
 
 unsigned long t0 = millis();
 bool isConnected = false;
+IPAddress local;
 
 APPLEMIDI_CREATE_INSTANCE(LinuxUDP, AppleMIDI); // see definition in AppleMidi_Defs.h
 
@@ -53,6 +54,18 @@ void OnAppleMidiDisconnected(uint32_t ssrc) {
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
+char getSysExStatus(const byte* data, uint16_t length)
+{
+  if (data[0] == 0xF0 && data[length - 1] == 0xF7)
+    return 'F'; // Full SysEx Command
+  else if (data[0] == 0xF0 && data[length - 1] != 0xF7)
+    return 'S'; // Start of SysEx-Segment
+  else if (data[0] != 0xF0 && data[length - 1] != 0xF7)
+    return 'M'; // Middle of SysEx-Segment
+  else
+    return 'E'; // End of SysEx-Segment
+}
+
 void OnAppleMidiSysEx(const byte* data, uint16_t length) {
   Serial.print(F("SYSX: ("));
   Serial.print(getSysExStatus(data, length));
@@ -67,18 +80,6 @@ void OnAppleMidiSysEx(const byte* data, uint16_t length) {
   Serial.println();
 }
 
-char getSysExStatus(const byte* data, uint16_t length)
-{
-  if (data[0] == 0xF0 && data[length - 1] == 0xF7)
-    return 'F'; // Full SysEx Command
-  else if (data[0] == 0xF0 && data[length - 1] != 0xF7)
-    return 'S'; // Start of SysEx-Segment
-  else if (data[0] != 0xF0 && data[length - 1] != 0xF7)
-    return 'M'; // Middle of SysEx-Segment
-  else
-    return 'E'; // End of SysEx-Segment
-}
-
 
 
 // -----------------------------------------------------------------------------
@@ -89,7 +90,7 @@ void setup()
 
   Serial.println(F("OK, now make sure you an rtpMIDI session that is Enabled"));
   Serial.print(F("Add device named Arduino with Host/Port "));
-  // Serial.print(Ethernet.localIP());
+  Serial.print(local);
   Serial.println(F(":5004"));
   Serial.println(F("Then press the Connect button"));
   Serial.println(F("Then open a MIDI listener (eg MIDI-OX) and monitor incoming notes"));
@@ -122,4 +123,17 @@ void loop()
   }
 }
 
-int main() { setup(); while(1) loop(); return 0; }
+static int streq(const char *p1, const char *p2) { return strcmp(p1,p2)==0; }
+
+int main(int argc, char *argv[]) {
+  for (int i = 1; i+1 < argc; i += 2) {
+    if (streq(argv[i], "-local"))
+      local.fromString(argv[i+1]);
+    else {
+      printf("unrecognized option %s\n", argv[i]);
+      printf("usage: initiate-sessions -local localIP\n");
+      return 1;
+    }
+  }
+  setup(); while(1) loop(); return 0;
+}
