@@ -67,7 +67,7 @@ public:
     if ( ! (hp = gethostbyname(address))) return 0;
     /* put the host's address into the server address structure */
     memcpy((void *)&addr, hp->h_addr_list[0], hp->h_length);
-    _address.dword = ntohl(addr.s_addr);
+    _address.dword = addr.s_addr;
     return 1;
   }
 
