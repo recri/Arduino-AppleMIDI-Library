@@ -28,8 +28,7 @@ APPLEMIDI_CREATE_INSTANCE(LinuxUDP, AppleMIDI); // see definition in AppleMidi_D
 // -----------------------------------------------------------------------------
 void OnAppleMidiConnected(uint32_t ssrc, char* name) {
   isConnected = true;
-  Serial.print(F("Connected to session "));
-  Serial.println(name);
+  printf("Connected to session %s\n", name);
 }
 
 // -----------------------------------------------------------------------------
@@ -37,45 +36,31 @@ void OnAppleMidiConnected(uint32_t ssrc, char* name) {
 // -----------------------------------------------------------------------------
 void OnAppleMidiDisconnected(uint32_t ssrc) {
   isConnected = false;
-  Serial.println(F("Disconnected"));
+  printf("Disconnected\n");
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
 static void OnAppleMidiNoteOn(byte channel, byte note, byte velocity) {
-  Serial.print(F("Incoming NoteOn from channel:"));
-  Serial.print(channel);
-  Serial.print(F(" note:"));
-  Serial.print(note);
-  Serial.print(F(" velocity:"));
-  Serial.print(velocity);
-  Serial.println();
+  printf("Incoming NoteOn from channel: %d note: %d velocity: %d\n", channel, note, velocity);
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
 static void OnAppleMidiNoteOff(byte channel, byte note, byte velocity) {
-  Serial.print(F("Incoming NoteOff from channel:"));
-  Serial.print(channel);
-  Serial.print(F(" note:"));
-  Serial.print(note);
-  Serial.print(F(" velocity:"));
-  Serial.print(velocity);
-  Serial.println();
+  printf("Incoming NoteOff from channel: %d note: %d velocity: %d\n", channel, note, velocity);
 }
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
 void setup()
 {
-  Serial.println(F("OK, now make sure you an rtpMIDI session that is Enabled"));
-  Serial.print(F("Add device named Arduino with Host/Port "));
-  Serial.print(local);
-  Serial.println(F("<your-ip>:5004"));
-  Serial.println(F("Then press the Connect button"));
-  Serial.println(F("Then open a MIDI listener (eg MIDI-OX) and monitor incoming notes"));
+  printf("OK, now make sure you have an rtpMIDI session that is Enabled\n");
+  printf("Add device named Linux with Host/Port %s:5004\n", local.toString());
+  printf("Then press the Connect button\n");
+  printf("Then open a MIDI listener (eg MIDI-OX) and monitor incoming notes\n");
 
   // Create a session and wait for a remote host to connect to us
   AppleMIDI.begin("test");
@@ -86,7 +71,7 @@ void setup()
   AppleMIDI.OnReceiveNoteOn(OnAppleMidiNoteOn);
   AppleMIDI.OnReceiveNoteOff(OnAppleMidiNoteOff);
 
-  Serial.println(F("Sending NoteOn/Off of note 45, every second"));
+  printf("Sending NoteOn/Off of note 45, every second\n");
 }
 
 // -----------------------------------------------------------------------------
@@ -99,10 +84,8 @@ void loop()
 
   // send a note every second
   // (dont cáll delay(1000) as it will stall the pipeline)
-  if (isConnected && (millis() - t0) > 1000)
-  {
+  if (isConnected && (millis() - t0) > 1000) {
     t0 = millis();
-    //   Serial.print(F(".");
 
     byte note = 45;
     byte velocity = 55;
@@ -121,7 +104,7 @@ int main(int argc, char *argv[]) {
       local.fromString(argv[i+1]);
     else {
       printf("unrecognized option %s\n", argv[i]);
-      printf("usage: initiate-sessions -local localIP\n");
+      printf("usage: note-on-off-every-second -local localIP\n");
       return 1;
     }
   }

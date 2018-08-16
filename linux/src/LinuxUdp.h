@@ -77,6 +77,7 @@ public:
     myaddr.sin_addr.s_addr = htonl(INADDR_ANY); /* haha, its 0 so it could be either format */
     myaddr.sin_port = htons(port);
     if (bind(_sock, (struct sockaddr *)&myaddr, sizeof(myaddr)) < 0) return 0;
+    printf("begin(%d) returns true\n", port);
     return 1;
   }
 

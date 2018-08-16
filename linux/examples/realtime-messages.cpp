@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#define F(x) x
 
 #include <LinuxUdp.h>
 
@@ -7,6 +6,7 @@
 
 unsigned long t0 = millis();
 bool isConnected = false;
+IPAddress local;
 
 APPLEMIDI_CREATE_INSTANCE(LinuxUDP, AppleMIDI); // see definition in AppleMidi_Defs.h
 
@@ -19,8 +19,7 @@ APPLEMIDI_CREATE_INSTANCE(LinuxUDP, AppleMIDI); // see definition in AppleMidi_D
 // -----------------------------------------------------------------------------
 void OnAppleMidiConnected(uint32_t ssrc, char* name) {
   isConnected = true;
-  Serial.print(F("Connected to session "));
-  Serial.println(name);
+  printf("Connected to session %s\n", name);
 }
 
 // -----------------------------------------------------------------------------
@@ -28,62 +27,42 @@ void OnAppleMidiConnected(uint32_t ssrc, char* name) {
 // -----------------------------------------------------------------------------
 void OnAppleMidiDisconnected(uint32_t ssrc) {
   isConnected = false;
-  Serial.println(F("Disconnected"));
+  printf("Disconnected\n");
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
 static void OnAppleMidiNoteOn(byte channel, byte note, byte velocity) {
-  Serial.print(F("Incoming NoteOn from channel:"));
-  Serial.print(channel);
-  Serial.print(F(" note:"));
-  Serial.print(note);
-  Serial.print(F(" velocity:"));
-  Serial.print(velocity);
-  Serial.println();
+  printf("Incoming NoteOn from channel: %d note: %d velocity: %d\n", channel, note, velocity);
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
 static void OnAppleMidiNoteOff(byte channel, byte note, byte velocity) {
-  Serial.print(F("Incoming NoteOff from channel:"));
-  Serial.print(channel);
-  Serial.print(F(" note:"));
-  Serial.print(note);
-  Serial.print(F(" velocity:"));
-  Serial.print(velocity);
-  Serial.println();
+  printf("Incoming NoteOff from channel: %d note: %d velocity: %d\n", channel, note, velocity);
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-static void OnAppleMidiClock() {
-  Serial.println(F("Clock"));
-}
+static void OnAppleMidiClock() { printf("Clock\n"); }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-static void OnAppleMidiStart() {
-  Serial.println(F("Start"));
-}
+static void OnAppleMidiStart() { printf("Start\n"); }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-static void OnAppleMidiStop() {
-  Serial.println(F("Stop"));
-}
+static void OnAppleMidiStop() { printf("Stop\n"); }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-static void OnAppleMidiContinue() {
-  Serial.println(F("Continue"));
-}
+static void OnAppleMidiContinue() { printf("Continue\n"); }
 
 // -----------------------------------------------------------------------------
 // (https://www.midi.org/specifications/item/table-1-summary-of-midi-message)
@@ -96,7 +75,7 @@ static void OnAppleMidiContinue() {
 // (non- active sensing) operation. 
 // -----------------------------------------------------------------------------
 static void OnAppleMidiActiveSensing() {
-  Serial.println(F("ActiveSensing"));
+  printf("ActiveSensing\n");
   AppleMIDI.activeSensing();
 }
 
@@ -108,7 +87,7 @@ static void OnAppleMidiActiveSensing() {
 // sent on power-up.
 // -----------------------------------------------------------------------------
 static void OnAppleMidiReset() {
-  Serial.println(F("Reset"));
+  printf("Reset\n");
 }
 
 // -----------------------------------------------------------------------------
@@ -118,26 +97,17 @@ static void OnAppleMidiReset() {
 // (1 beat= six MIDI clocks) since the start of the song. l is the LSB, m the MSB.
 // -----------------------------------------------------------------------------
 static void OnAppleMidiSongPosition(unsigned short a) {
-  Serial.print  (F("SongPosition: "));
-  Serial.println(a);
+  printf("SongPosition: %d\n", a);
 }
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
 void setup()
 {
-  // Serial communications and wait for port to open:
-  Serial.begin(115200);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for Leonardo only
-  }
-
-  Serial.println(F("OK, now make sure you have an rtpMIDI session that is Enabled"));
-  Serial.print(F("Add device named Arduino with Host/Port "));
-  // Serial.print(Ethernet.localIP());
-  Serial.println(F(":5004"));
-  Serial.println(F("Then press the Connect button"));
-  Serial.println(F("Then open a MIDI listener (eg MIDI-OX) and monitor incoming notes"));
+  printf("OK, now make sure you have an rtpMIDI session that is Enabled\n");
+  printf("Add device named Linux with Host/Port %s:5004\n", local.toString());
+  printf("Then press the Connect button\n");
+  printf("Then open a MIDI listener (eg MIDI-OX) and monitor incoming notes\n");
 
   // Create a session and wait for a remote host to connect to us
   AppleMIDI.begin("test");
@@ -157,7 +127,7 @@ void setup()
 
   AppleMIDI.OnReceiveSongPosition(OnAppleMidiSongPosition);
 
-  Serial.println(F("Listening for Clock events"));
+  printf("Listening for Clock events\n");
 }
 
 // -----------------------------------------------------------------------------
@@ -169,4 +139,17 @@ void loop()
   AppleMIDI.run();
 }
 
-int main() { setup(); while(1) loop(); return 0; }
+static int streq(const char *p1, const char *p2) { return strcmp(p1,p2)==0; }
+
+int main(int argc, char *argv[]) { 
+  for (int i = 1; i+1 < argc; i += 2) {
+    if (streq(argv[i], "-local"))
+      local.fromString(argv[i+1]);
+    else {
+      printf("unrecognized option %s\n", argv[i]);
+      printf("usage: realtime-messages -local localIP\n");
+      return 1;
+    }
+  }
+  setup(); while(1) loop(); return 0;
+}
