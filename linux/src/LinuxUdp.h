@@ -96,7 +96,7 @@ public:
   // Start building up a packet to send to the remote host specific in ip and port
   // Returns 1 if successful, 0 if there was a problem with the supplied IP address or port
   int beginPacket(IPAddress ip, uint16_t port) {
-    printf("beginPacket(%s, %d)\n", ip.toString(), port);
+    printf("beginPacket((IPAddress)%s, %d)\n", ip.toString(), port);
     _offset = 0;
     _destIP = ip;
     _destPort = port;
@@ -107,6 +107,7 @@ public:
   // Returns 1 if successful, 0 if there was a problem resolving the hostname or port
   int beginPacket(const char *host, uint16_t port) {
     IPAddress addr;
+    printf("beginPacket((char *)%s, %d)\n", host, port);
     return (addr.fromString(host)) ? beginPacket(addr, port) : 0;
   }
 
