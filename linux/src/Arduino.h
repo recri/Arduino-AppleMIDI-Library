@@ -9,11 +9,14 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>	/* for memcpy */
+#include <fcntl.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <netdb.h>
   
+#define F(x) x
+
 typedef bool boolean;
 typedef uint8_t byte;
 unsigned long millis(void);

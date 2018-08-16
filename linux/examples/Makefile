@@ -1,21 +1,25 @@
+DEFINE=-DLINUX=1 -DAPPLEMIDI_DEBUG=1 -DDEBUG_BUILD=1
 INCLUDE=-I../src -I../../src
-DEFINE=-DLINUX=1	
+CFLAGS=-g $(DEFINE) $(INCLUDE) 
 all: initiate-session initiate-sessions note-on-off-every-second realtime-messages receive-MTC sysex
 
+clean:
+	rm initiate-session initiate-sessions note-on-off-every-second realtime-messages receive-MTC sysex
+
 initiate-session: initiate-session.cpp ../src/*.cpp  ../src/*.h
-	g++ -o initiate-session $(DEFINE) $(INCLUDE) initiate-session.cpp ../src/*.cpp 
+	g++ -o initiate-session $(CFLAGS) initiate-session.cpp ../src/*.cpp 
 
 initiate-sessions: initiate-sessions.cpp ../src/*.cpp ../src/*.h
-	g++ -o initiate-sessions $(DEFINE) $(INCLUDE) initiate-sessions.cpp ../src/*.cpp 
+	g++ -o initiate-sessions $(CFLAGS) initiate-sessions.cpp ../src/*.cpp 
 
 note-on-off-every-second: note-on-off-every-second.cpp ../src/*.cpp ../src/*.h
-	g++ -o note-on-off-every-second $(DEFINE) $(INCLUDE) note-on-off-every-second.cpp ../src/*.cpp 
+	g++ -o note-on-off-every-second $(CFLAGS) note-on-off-every-second.cpp ../src/*.cpp 
 
 realtime-messages: realtime-messages.cpp ../src/*.cpp ../src/*.h
-	g++ -o realtime-messages $(DEFINE) $(INCLUDE) realtime-messages.cpp ../src/*.cpp 
+	g++ -o realtime-messages $(CFLAGS) realtime-messages.cpp ../src/*.cpp 
 
 receive-MTC: receive-MTC.cpp ../src/*.cpp ../src/*.h
-	g++ -o receive-MTC $(DEFINE) $(INCLUDE) receive-MTC.cpp ../src/*.cpp 
+	g++ -o receive-MTC $(CFLAGS) receive-MTC.cpp ../src/*.cpp 
 
 sysex: sysex.cpp ../src/*.cpp ../src/*.h
-	g++ -o sysex $(DEFINE) $(INCLUDE) sysex.cpp ../src/*.cpp 
+	g++ -o sysex $(CFLAGS) sysex.cpp ../src/*.cpp 

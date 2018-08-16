@@ -64,6 +64,8 @@ public:
   // initialize, start listening on specified port. Returns 1 if successful, 0 if there are no sockets available to use  
   uint8_t begin(uint16_t port) { 
     if ((_sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0) return 0;
+    fcntl(_sock, F_SETFL, O_NONBLOCK);
+
     struct sockaddr_in myaddr;
     /* bind to an arbitrary return address */
     /* because this is the client side, we don't care about the address */
@@ -116,6 +118,7 @@ public:
     servaddr = _destIP.sockaddr();
     servaddr.sin_family = AF_INET;
     servaddr.sin_port = htons(_destPort);
+    printf("sendto %s:%d\n", _destIP.toString(), _destPort);
     return sendto(_sock, _obuf, _offset, 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
   }
 
@@ -143,7 +146,7 @@ public:
     struct sockaddr_in remaddr;	   /* remote address */
     socklen_t addrlen = sizeof(remaddr); /* length of addresses */
     _ilimit = recvfrom(_sock, _ibuf, _BUFFER_SIZE, 0, (struct sockaddr *)&remaddr, &addrlen);
-
+    if (_ilimit < 0) _ilimit = 0;
     return available();
   }
  
