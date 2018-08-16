@@ -149,7 +149,7 @@ public:
     socklen_t addrlen = sizeof(remaddr); /* length of addresses */
     _ilimit = recvfrom(_sock, _ibuf, _BUFFER_SIZE, 0, (struct sockaddr *)&remaddr, &addrlen);
     _remoteIP.fromSockaddr(remaddr);
-    _remotePort = ntohs(remaddr.si_port);
+    _remotePort = ntohs(remaddr.sin_port);
     if (_ilimit < 0) _ilimit = 0;
     return available();
   }
