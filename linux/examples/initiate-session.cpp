@@ -22,8 +22,7 @@ IPAddress remote;		// fill in remote ip with command line option
 // -----------------------------------------------------------------------------
 void OnAppleMidiConnected(uint32_t ssrc, char* name) {
   isConnected = true;
-  Serial.print("Connected to session ");
-  Serial.println(name);
+  printf("Connected to session %s\n", name);
 }
 
 // -----------------------------------------------------------------------------
@@ -31,53 +30,35 @@ void OnAppleMidiConnected(uint32_t ssrc, char* name) {
 // -----------------------------------------------------------------------------
 void OnAppleMidiDisconnected(uint32_t ssrc) {
   isConnected = false;
-  Serial.println("Disconnected");
+  printf("Disconnected\n");
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
 void OnAppleMidiNoteOn(byte channel, byte note, byte velocity) {
-  Serial.print("Incoming NoteOn from channel:");
-  Serial.print(channel);
-  Serial.print(" note:");
-  Serial.print(note);
-  Serial.print(" velocity:");
-  Serial.print(velocity);
-  Serial.println();
+  printf("Incoming NoteOn from channel: %d note: %d velocity: %d\n", channel, note, velocity);
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
 void OnAppleMidiNoteOff(byte channel, byte note, byte velocity) {
-  Serial.print("Incoming NoteOff from channel:");
-  Serial.print(channel);
-  Serial.print(" note:");
-  Serial.print(note);
-  Serial.print(" velocity:");
-  Serial.print(velocity);
-  Serial.println();
+  printf("Incoming NoteOff from channel: %d note: %d velocity: %d\n", channel, note, velocity);
 }
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
 void setup()
 {
-
-  Serial.print("IP address is ");
-  Serial.println(local);
+  printf("local IP address is %s\n", local.toString());
   
-  Serial.print("AppleMIDI Session ");
-  Serial.print(AppleMIDI.getSessionName());
-  Serial.print(" with SSRC 0x");
-  Serial.println(AppleMIDI.getSynchronizationSource(), HEX);
+  printf("AppleMIDI Session %s with SSRC 0x%x\n", AppleMIDI.getSessionName(), AppleMIDI.getSynchronizationSource());
 
   // Create a session and wait for a remote host to connect to us
   AppleMIDI.begin("test");
 
-  Serial.print("OK, now make an active connection to ");
-  Serial.println(remote);
+  printf("OK, now making an active connection to %s\n", remote.toString());
 
   // This is the invite to the remote participant
   AppleMIDI.invite(remote);
@@ -88,7 +69,7 @@ void setup()
   AppleMIDI.OnReceiveNoteOn(OnAppleMidiNoteOn);
   AppleMIDI.OnReceiveNoteOff(OnAppleMidiNoteOff);
 
-  Serial.println("Sending NoteOn/Off of note 45, every second");
+  printf("Sending NoteOn/Off of note 45, every second\n");
 }
 
 // -----------------------------------------------------------------------------
@@ -104,7 +85,6 @@ void loop()
   if (isConnected && (millis() - t0) > 1000)
   {
     t0 = millis();
-    //   Serial.print(".");
 
     int note = 45;
     int velocity = 55;

@@ -113,8 +113,8 @@ public:
     struct sockaddr_in servaddr;    /* server address */
     /* fill in the server's address and data */
     memset((char*)&servaddr, 0, sizeof(servaddr));
+    servaddr = _destIP.sockaddr();
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = htonl((uint32_t)_destPort);
     servaddr.sin_port = htons(_destPort);
     return sendto(_sock, _obuf, _offset, 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
   }
