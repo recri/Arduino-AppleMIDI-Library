@@ -47,8 +47,8 @@ private:
 
   IPAddress _remoteIP;		// remote IP address for the incoming packet whilst it's being processed
   uint16_t _remotePort;		// remote port for the incoming packet whilst it's being processed
-  uint16_t _ioffset;		// offset into input buffer
-  uint16_t _ilimit;		/* number of bytes received */
+  int _ioffset;		// offset into input buffer
+  int _ilimit;		/* number of bytes received */
   uint8_t _ibuf[_BUFFER_SIZE];	/* input buffer */
 
   IPAddress _destIP;		/* remote IP address for outgoing packet during construction */
@@ -167,7 +167,7 @@ public:
     int remaining = available();
     if (remaining > 0) {
       int got = (remaining <= len) ? remaining : len;
-      memcpy(buffer, _ibuf+_ioffset, remaining);
+      memcpy(buffer, _ibuf+_ioffset, got);
       _ioffset += got;
       return got;
     }

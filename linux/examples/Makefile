@@ -1,4 +1,4 @@
-DEFINE=-DLINUX=1 -DAPPLEMIDI_DEBUG=1 -DDEBUG_BUILD=1
+DEFINE=-DLINUX=1
 INCLUDE=-I../src -I../../src
 CFLAGS=-g $(DEFINE) $(INCLUDE) 
 all: initiate-session initiate-sessions note-on-off-every-second realtime-messages receive-MTC sysex
