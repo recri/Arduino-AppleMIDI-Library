@@ -56,6 +56,8 @@ public:
   // Overloaded cast operator to allow IPAddress objects to be used where a pointer
   // to a four-byte uint8_t array is expected
 
+  void fromSockaddr(struct sockaddr_in addr) { ip4addr = addr; }
+
   struct sockaddr_in sockaddr() { return ip4addr; }
   
   size_t printTo(Print& p) const {
